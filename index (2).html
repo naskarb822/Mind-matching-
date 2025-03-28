@@ -1,0 +1,775 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Memory Match - Advanced Features Demo</title>
+  <!-- Google Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600&display=swap" rel="stylesheet">
+  <style>
+    /* ========== Global Reset & Base Styles ========== */
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    body {
+      font-family: 'Montserrat', sans-serif;
+      background: linear-gradient(135deg, #f6d365, #fda085);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      min-height: 100vh;
+      padding: 20px;
+    }
+    h1 {
+      margin-bottom: 10px;
+      font-size: 2rem;
+      color: #333;
+      text-shadow: 1px 1px 2px rgba(0,0,0,0.2);
+    }
+
+    /* ========== Glassmorphism Panel Styles ========== */
+    .glass {
+      background: rgba(255, 255, 255, 0.15);
+      border-radius: 16px;
+      box-shadow: 0 4px 30px rgba(0,0,0,0.1);
+      backdrop-filter: blur(5px);
+      -webkit-backdrop-filter: blur(5px);
+      border: 1px solid rgba(255,255,255,0.3);
+    }
+
+    /* ========== Button Styles ========== */
+    button {
+      border: none;
+      outline: none;
+      padding: 10px 15px;
+      border-radius: 8px;
+      font-size: 1rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      background: linear-gradient(45deg, #ff9a9e, #fad0c4);
+      color: #fff;
+      text-shadow: 1px 1px 2px rgba(0,0,0,0.2);
+    }
+    button:hover {
+      transform: scale(1.05);
+    }
+
+    /* ========== Sign-In Panel ========== */
+    #loginPanel {
+      padding: 20px 25px;
+      margin-bottom: 20px;
+      text-align: center;
+    }
+    #loginPanel label {
+      font-weight: 600;
+      color: #333;
+    }
+    #loginPanel input {
+      padding: 10px;
+      margin: 10px 5px;
+      border: 1px solid #ccc;
+      border-radius: 8px;
+      width: 200px;
+      outline: none;
+      font-size: 1rem;
+    }
+
+    /* ========== Top Bar ========== */
+    #topBar {
+      width: 100%;
+      max-width: 500px;
+      display: none;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 15px;
+      position: relative;
+    }
+    .info {
+      background: rgba(255, 255, 255, 0.25);
+      padding: 10px 15px;
+      border-radius: 10px;
+      font-size: 1rem;
+      color: #333;
+    }
+    .icon-btn {
+      background: rgba(255, 255, 255, 0.25);
+      padding: 10px;
+      border-radius: 50%;
+      font-size: 1.2rem;
+      cursor: pointer;
+      border: 1px solid rgba(255,255,255,0.4);
+      margin-left: 5px;
+    }
+    .icon-btn:hover {
+      background: rgba(255, 255, 255, 0.35);
+    }
+    #topActions {
+      display: flex;
+      align-items: center;
+    }
+
+    /* ========== Settings Panel ========== */
+    #settingsPanel {
+      display: none;
+      position: absolute;
+      top: 50px;
+      right: 0;
+      background: rgba(255, 255, 255, 0.2);
+      padding: 15px;
+      border-radius: 12px;
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+      border: 1px solid rgba(255, 255, 255, 0.3);
+      z-index: 100;
+      width: 200px;
+    }
+    #settingsPanel label {
+      display: block;
+      margin-bottom: 10px;
+      font-size: 0.9rem;
+      color: #333;
+    }
+    /* ========== Game Board ========== */
+    #gameBoard {
+      display: grid;
+      grid-gap: 10px;
+      justify-content: center;
+      margin-top: 10px;
+      padding: 15px;
+      border-radius: 16px;
+      max-width: 90vw;
+    }
+    .card {
+      width: 70px;
+      height: 70px;
+      background: rgba(255, 255, 255, 0.25);
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 2rem;
+      color: #333;
+      cursor: pointer;
+      transition: transform 0.3s ease, background 0.3s ease;
+      user-select: none;
+    }
+    .card.flipped {
+      background: rgba(255, 218, 185, 0.8);
+      transform: rotateY(180deg);
+    }
+    .card.matched {
+      background: rgba(144, 238, 144, 0.8);
+      cursor: default;
+    }
+
+    /* ========== Bottom Bar ========== */
+    #bottomBar {
+      width: 100%;
+      max-width: 500px;
+      display: none;
+      margin-top: 15px;
+      justify-content: space-around;
+      align-items: center;
+    }
+
+    /* ========== Modal Styles ========== */
+    .modal {
+      display: none;
+      position: fixed;
+      z-index: 200;
+      left: 0; top: 0;
+      width: 100%; height: 100%;
+      overflow: auto;
+      background: rgba(0, 0, 0, 0.5);
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+    .modal-content {
+      background: rgba(255,255,255,0.9);
+      border-radius: 12px;
+      padding: 20px;
+      width: 100%;
+      max-width: 400px;
+      text-align: center;
+      position: relative;
+    }
+    .close-btn {
+      position: absolute;
+      top: 10px;
+      right: 15px;
+      font-size: 1.5rem;
+      cursor: pointer;
+      color: #333;
+    }
+
+    /* ========== Additional Panels ========== */
+    #themePanel {
+      margin-bottom: 10px;
+    }
+    #profilePanel {
+      margin-top: 10px;
+    }
+
+    /* Responsive adjustments */
+    @media (max-width: 600px) {
+      .card {
+        width: 60px;
+        height: 60px;
+        font-size: 1.5rem;
+      }
+      #loginPanel input {
+        width: 150px;
+      }
+      #topBar, #bottomBar {
+        flex-direction: column;
+        gap: 10px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <h1>Memory Match (Advanced Demo)</h1>
+
+  <!-- Sign-In Panel -->
+  <div id="loginPanel" class="glass">
+    <label for="playerName">Enter Your Name:</label>
+    <input type="text" id="playerName" placeholder="Your Name">
+    <button id="loginBtn">Start Game</button>
+
+    <!-- Profile Customization (Avatar) -->
+    <div id="profilePanel">
+      <p>Choose Avatar:</p>
+      <select id="avatarSelect">
+        <option value="🧑">🧑</option>
+        <option value="👩">👩</option>
+        <option value="👨">👨</option>
+        <option value="👩‍🦰">👩‍🦰</option>
+        <option value="👨‍🦱">👨‍🦱</option>
+      </select>
+    </div>
+  </div>
+
+  <!-- Top Bar: Level, Timer, Settings & Additional Actions -->
+  <div id="topBar" class="glass">
+    <div class="info" id="levelInfo">Level: 1</div>
+    <div class="info" id="timerInfo">Time: 60</div>
+    <div class="info" id="coinInfo">Coins: 0</div>
+    <div id="topActions">
+      <button class="icon-btn" id="tutorialBtn">❓</button>
+      <button class="icon-btn" id="leaderboardBtn">🏆</button>
+      <button class="icon-btn" id="achievementBtn">🎖</button>
+      <button class="icon-btn" id="shareBtn">📤</button>
+      <button class="icon-btn" id="settingsBtn">⚙</button>
+    </div>
+    <!-- Settings Panel -->
+    <div id="settingsPanel">
+      <label>
+        <input type="checkbox" id="soundToggle" checked> Sound On/Off
+      </label>
+      <label>
+        <input type="checkbox" id="difficultyToggle"> Hard Mode
+      </label>
+      <label>
+        <input type="checkbox" id="notificationsToggle"> Notifications
+      </label>
+      <button id="buyPremiumBtn">Buy Premium</button>
+    </div>
+  </div>
+
+  <!-- Game Board -->
+  <div id="gameBoard"></div>
+
+  <!-- Bottom Bar: Hint, Restart, & Theme Selection -->
+  <div id="bottomBar" class="glass">
+    <button id="hintBtn">Hint</button>
+    <button id="restartBtn">Restart</button>
+    <div id="themePanel">
+      <label for="themeSelect" style="color:#333;font-size:0.9rem;">Theme:</label>
+      <select id="themeSelect">
+        <option value="default">Default</option>
+        <option value="dark">Dark</option>
+        <option value="nature">Nature</option>
+      </select>
+    </div>
+  </div>
+
+  <!-- Tutorial Modal -->
+  <div id="tutorialModal" class="modal">
+    <div class="modal-content glass">
+      <span class="close-btn" id="closeTutorial">&times;</span>
+      <h2>Tutorial</h2>
+      <p>Welcome to Memory Match! Flip cards to find matching pairs. Complete levels before time runs out. Earn coins and unlock achievements!</p>
+      <p>Daily Challenge resets every day. Check the main screen for special rewards!</p>
+    </div>
+  </div>
+
+  <!-- Leaderboard Modal -->
+  <div id="leaderboardModal" class="modal">
+    <div class="modal-content glass">
+      <span class="close-btn" id="closeLeaderboard">&times;</span>
+      <h2>Leaderboard</h2>
+      <p>(This is a demo. Real data would come from a server.)</p>
+      <ol id="leaderboardList">
+        <li>Player A - Level 50</li>
+        <li>Player B - Level 40</li>
+        <li>Player C - Level 30</li>
+      </ol>
+    </div>
+  </div>
+
+  <!-- Achievements Modal -->
+  <div id="achievementModal" class="modal">
+    <div class="modal-content glass">
+      <span class="close-btn" id="closeAchievement">&times;</span>
+      <h2>Achievements</h2>
+      <p>You unlocked the following achievements:</p>
+      <ul id="achievementList"></ul>
+    </div>
+  </div>
+
+  <!-- Daily Challenge Modal -->
+  <div id="dailyModal" class="modal">
+    <div class="modal-content glass">
+      <span class="close-btn" id="closeDaily">&times;</span>
+      <h2>Daily Challenge</h2>
+      <p>Complete this special level to earn bonus coins!</p>
+      <button id="playDailyBtn">Play Daily Challenge</button>
+    </div>
+  </div>
+
+  <script>
+    /**************************************************
+     * ========== Global Variables & Game State =======
+     **************************************************/
+    let playerName = "";
+    let avatar = "🧑";
+    let currentLevel = 1;
+    const maxLevel = 100;
+    let timeRemaining = 60;
+    let timerId = null;
+    let coins = 0; // in-game currency
+    let achievements = [];
+    let dailyChallengePlayed = false; // track if today's challenge done
+
+    // Game State Variables
+    let firstCard = null, secondCard = null, lockBoard = false, matchesFound = 0;
+
+    // Settings
+    let isSoundOn = true, isHardMode = false, notificationsEnabled = false;
+
+    // Symbols Array (50 unique emojis)
+    const allSymbols = [
+      "❤️","⭐","🎵","⚡","🌙","🎭","🐶","🍀","🎁","🐱",
+      "🍔","🏀","🍕","💎","🚀","🐼","🎧","🔥","🐣","🌸",
+      "☀️","❄️","🍟","🍎","🍭","🐯","🍇","📚","🎲","🐠",
+      "🥑","🍉","🌮","🌈","🍦","🍩","🐰","🎀","💡","🍋",
+      "🎸","💻","🦊","🎂","🍌","🍒","⚽","🐨","🐸","🍪"
+    ];
+
+    // Sound Effects (Online Sources)
+    const flipSound = new Audio("https://www.soundjay.com/buttons/sounds/button-29.mp3");
+    const matchSound = new Audio("https://www.soundjay.com/buttons/sounds/button-4.mp3");
+    const noMatchSound = new Audio("https://www.soundjay.com/buttons/sounds/button-10.mp3");
+    const winSound = new Audio("https://www.soundjay.com/misc/sounds/bell-ringing-05.mp3");
+    const loseSound = new Audio("https://www.soundjay.com/misc/sounds/fail-buzzer-04.mp3");
+
+    /**************************************************
+     * ========== DOM Element References =============
+     **************************************************/
+    const loginPanel = document.getElementById("loginPanel");
+    const loginBtn = document.getElementById("loginBtn");
+    const playerNameInput = document.getElementById("playerName");
+    const avatarSelect = document.getElementById("avatarSelect");
+
+    const topBar = document.getElementById("topBar");
+    const levelInfo = document.getElementById("levelInfo");
+    const timerInfo = document.getElementById("timerInfo");
+    const coinInfo = document.getElementById("coinInfo");
+
+    const settingsBtn = document.getElementById("settingsBtn");
+    const settingsPanel = document.getElementById("settingsPanel");
+    const soundToggle = document.getElementById("soundToggle");
+    const difficultyToggle = document.getElementById("difficultyToggle");
+    const notificationsToggle = document.getElementById("notificationsToggle");
+    const buyPremiumBtn = document.getElementById("buyPremiumBtn");
+
+    const gameBoard = document.getElementById("gameBoard");
+    const bottomBar = document.getElementById("bottomBar");
+    const hintBtn = document.getElementById("hintBtn");
+    const restartBtn = document.getElementById("restartBtn");
+    const themeSelect = document.getElementById("themeSelect");
+
+    // Modals
+    const tutorialModal = document.getElementById("tutorialModal");
+    const closeTutorial = document.getElementById("closeTutorial");
+    const tutorialBtn = document.getElementById("tutorialBtn");
+
+    const leaderboardModal = document.getElementById("leaderboardModal");
+    const leaderboardBtn = document.getElementById("leaderboardBtn");
+    const closeLeaderboard = document.getElementById("closeLeaderboard");
+
+    const achievementModal = document.getElementById("achievementModal");
+    const achievementBtn = document.getElementById("achievementBtn");
+    const closeAchievement = document.getElementById("closeAchievement");
+    const achievementList = document.getElementById("achievementList");
+
+    const dailyModal = document.getElementById("dailyModal");
+    const closeDaily = document.getElementById("closeDaily");
+    const playDailyBtn = document.getElementById("playDailyBtn");
+
+    const shareBtn = document.getElementById("shareBtn");
+
+    /**************************************************
+     * ========== Event Listeners =====================
+     **************************************************/
+    // Start Game on Sign-In
+    loginBtn.addEventListener("click", () => {
+      const name = playerNameInput.value.trim();
+      if(!name) {
+        alert("Please enter your name!");
+        return;
+      }
+      playerName = name;
+      avatar = avatarSelect.value || "🧑";
+      loadProgress();
+      initGame();
+
+      // Check Daily Challenge
+      checkDailyChallenge();
+    });
+
+    // Settings Panel Toggle
+    settingsBtn.addEventListener("click", (e) => {
+      e.stopPropagation();
+      settingsPanel.style.display = (settingsPanel.style.display === "block") ? "none" : "block";
+    });
+    document.addEventListener("click", (e) => {
+      if(!settingsBtn.contains(e.target) && !settingsPanel.contains(e.target)) {
+        settingsPanel.style.display = "none";
+      }
+    });
+
+    soundToggle.addEventListener("change", () => { isSoundOn = soundToggle.checked; });
+    difficultyToggle.addEventListener("change", () => { isHardMode = difficultyToggle.checked; });
+    notificationsToggle.addEventListener("change", () => {
+      notificationsEnabled = notificationsToggle.checked;
+      if(notificationsEnabled) {
+        // Placeholder: Real push notifications need service workers & server
+        alert("Notifications enabled (demo)!");
+      }
+    });
+    buyPremiumBtn.addEventListener("click", () => {
+      alert("Premium purchase not implemented yet. (Demo)");
+    });
+
+    // Additional Modals
+    tutorialBtn.addEventListener("click", () => { showModal(tutorialModal); });
+    closeTutorial.addEventListener("click", () => { hideModal(tutorialModal); });
+    leaderboardBtn.addEventListener("click", () => { showModal(leaderboardModal); });
+    closeLeaderboard.addEventListener("click", () => { hideModal(leaderboardModal); });
+    achievementBtn.addEventListener("click", () => { showModal(achievementModal); });
+    closeAchievement.addEventListener("click", () => { hideModal(achievementModal); });
+    closeDaily.addEventListener("click", () => { hideModal(dailyModal); });
+    playDailyBtn.addEventListener("click", () => {
+      hideModal(dailyModal);
+      alert("Starting daily challenge (demo) - You could create a special board here!");
+      dailyChallengePlayed = true;
+      localStorage.setItem("mm_dailyChallengePlayed", "1");
+    });
+
+    // Hint, Restart, Theme
+    hintBtn.addEventListener("click", showHint);
+    restartBtn.addEventListener("click", restartGame);
+    themeSelect.addEventListener("change", switchTheme);
+
+    // Share Button
+    shareBtn.addEventListener("click", shareGame);
+
+    /**************************************************
+     * ========== Core Game Functions =================
+     **************************************************/
+    function initGame() {
+      loginPanel.style.display = "none";
+      topBar.style.display = "flex";
+      bottomBar.style.display = "flex";
+      setupLevel(currentLevel);
+      updateCoinInfo();
+      updateAchievementList();
+      switchTheme(); // apply chosen theme
+    }
+
+    function setupLevel(level) {
+      clearInterval(timerId);
+      gameBoard.innerHTML = "";
+      firstCard = null; secondCard = null; lockBoard = false; matchesFound = 0;
+      levelInfo.textContent = `Level: ${level}`;
+      
+      // Determine number of pairs for current level
+      const numPairs = Math.min(3 + level, 30);
+      const selectedSymbols = shuffleArray(allSymbols).slice(0, numPairs);
+      const levelSymbols = shuffleArray([...selectedSymbols, ...selectedSymbols]);
+      
+      // Adjust timer based on level & difficulty
+      const baseTime = isHardMode ? 40 : 60;
+      timeRemaining = Math.max(10, baseTime - Math.floor(level / 2));
+      timerInfo.textContent = `Time: ${timeRemaining}`;
+      
+      levelSymbols.forEach(sym => {
+        const card = document.createElement("div");
+        card.classList.add("card");
+        card.dataset.symbol = sym;
+        card.addEventListener("click", flipCard);
+        gameBoard.appendChild(card);
+      });
+      
+      const gridSize = Math.ceil(Math.sqrt(levelSymbols.length));
+      gameBoard.style.gridTemplateColumns = `repeat(${gridSize}, 70px)`;
+      
+      timerId = setInterval(() => {
+        timeRemaining--;
+        timerInfo.textContent = `Time: ${timeRemaining}`;
+        if(timeRemaining <= 0) {
+          clearInterval(timerId);
+          if(isSoundOn) loseSound.play();
+          alert(`Time's up! You failed Level ${level}. Try again.`);
+          setupLevel(level);
+        }
+      }, 1000);
+    }
+
+    function flipCard() {
+      if(lockBoard) return;
+      if(this.classList.contains("flipped")) return;
+      
+      this.classList.add("flipped");
+      this.textContent = this.dataset.symbol;
+      if(isSoundOn) flipSound.play();
+      
+      if(!firstCard) {
+        firstCard = this;
+        return;
+      }
+      secondCard = this;
+      lockBoard = true;
+      checkForMatch();
+    }
+
+    function checkForMatch() {
+      if(firstCard.dataset.symbol === secondCard.dataset.symbol) {
+        if(isSoundOn) matchSound.play();
+        firstCard.classList.add("matched");
+        secondCard.classList.add("matched");
+        firstCard.removeEventListener("click", flipCard);
+        secondCard.removeEventListener("click", flipCard);
+        matchesFound++;
+        resetBoard();
+        const totalPairs = document.querySelectorAll(".card").length / 2;
+        if(matchesFound === totalPairs) {
+          clearInterval(timerId);
+          if(isSoundOn) winSound.play();
+          setTimeout(() => {
+            alert(`Congratulations ${avatar} ${playerName}! You cleared Level ${currentLevel}.`);
+            // Reward coins
+            const reward = 10 + currentLevel; 
+            coins += reward;
+            alert(`You earned ${reward} coins!`);
+            updateCoinInfo();
+
+            // Achievements
+            unlockAchievement(`Cleared Level ${currentLevel}`);
+            
+            currentLevel++;
+            if(currentLevel > maxLevel) {
+              alert(`Amazing! You completed all ${maxLevel} levels!`);
+              currentLevel = 1;
+            }
+            saveProgress();
+            setupLevel(currentLevel);
+          }, 500);
+        }
+      } else {
+        if(isSoundOn) noMatchSound.play();
+        setTimeout(() => {
+          firstCard.classList.remove("flipped");
+          secondCard.classList.remove("flipped");
+          firstCard.textContent = "";
+          secondCard.textContent = "";
+          resetBoard();
+        }, 700);
+      }
+    }
+
+    function resetBoard() {
+      [firstCard, secondCard, lockBoard] = [null, null, false];
+    }
+
+    function showHint() {
+      const allCards = document.querySelectorAll(".card:not(.matched)");
+      allCards.forEach(card => {
+        card.classList.add("flipped");
+        card.textContent = card.dataset.symbol;
+      });
+      setTimeout(() => {
+        allCards.forEach(card => {
+          if(!card.classList.contains("matched")) {
+            card.classList.remove("flipped");
+            card.textContent = "";
+          }
+        });
+      }, 2000);
+    }
+
+    function restartGame() {
+      if(confirm("Are you sure you want to restart the game?")) {
+        currentLevel = 1;
+        coins = 0;
+        saveProgress();
+        setupLevel(currentLevel);
+        updateCoinInfo();
+      }
+    }
+
+    /**************************************************
+     * ========== Local Storage & Progress ============
+     **************************************************/
+    function saveProgress() {
+      localStorage.setItem("mm_playerName", playerName);
+      localStorage.setItem("mm_avatar", avatar);
+      localStorage.setItem("mm_level", currentLevel);
+      localStorage.setItem("mm_coins", coins);
+      localStorage.setItem("mm_isHardMode", isHardMode ? "1" : "0");
+      localStorage.setItem("mm_achievements", JSON.stringify(achievements));
+      localStorage.setItem("mm_dailyChallengePlayed", dailyChallengePlayed ? "1" : "0");
+    }
+
+    function loadProgress() {
+      const savedName = localStorage.getItem("mm_playerName");
+      const savedAvatar = localStorage.getItem("mm_avatar");
+      const savedLevel = localStorage.getItem("mm_level");
+      const savedCoins = localStorage.getItem("mm_coins");
+      const savedHardMode = localStorage.getItem("mm_isHardMode");
+      const savedAchievements = localStorage.getItem("mm_achievements");
+      const savedDaily = localStorage.getItem("mm_dailyChallengePlayed");
+
+      if(savedName && savedName === playerName) {
+        avatar = savedAvatar || "🧑";
+        currentLevel = savedLevel ? parseInt(savedLevel, 10) : 1;
+        coins = savedCoins ? parseInt(savedCoins, 10) : 0;
+        if(savedHardMode) {
+          isHardMode = (savedHardMode === "1");
+          difficultyToggle.checked = isHardMode;
+        }
+        achievements = savedAchievements ? JSON.parse(savedAchievements) : [];
+        dailyChallengePlayed = (savedDaily === "1");
+      } else {
+        currentLevel = 1;
+        coins = 0;
+        achievements = [];
+        dailyChallengePlayed = false;
+      }
+    }
+
+    /**************************************************
+     * ========== Achievements System ================
+     **************************************************/
+    function unlockAchievement(achievement) {
+      if(!achievements.includes(achievement)) {
+        achievements.push(achievement);
+        saveProgress();
+        updateAchievementList();
+      }
+    }
+
+    function updateAchievementList() {
+      achievementList.innerHTML = "";
+      achievements.forEach(ach => {
+        const li = document.createElement("li");
+        li.textContent = ach;
+        achievementList.appendChild(li);
+      });
+    }
+
+    /**************************************************
+     * ========== Daily Challenge =====================
+     **************************************************/
+    function checkDailyChallenge() {
+      // Simple approach: check date in localStorage
+      const lastDate = localStorage.getItem("mm_lastDate");
+      const today = new Date().toDateString();
+
+      if(lastDate !== today) {
+        // new day => reset daily challenge
+        localStorage.setItem("mm_lastDate", today);
+        localStorage.setItem("mm_dailyChallengePlayed", "0");
+        dailyChallengePlayed = false;
+        // Show daily challenge modal
+        showModal(dailyModal);
+      } else {
+        // same day => check if user played
+        if(!dailyChallengePlayed) {
+          showModal(dailyModal);
+        }
+      }
+    }
+
+    /**************************************************
+     * ========== UI/UX Enhancements ================
+     **************************************************/
+    // Switch theme (Multiple Themes)
+    function switchTheme() {
+      const theme = themeSelect.value;
+      if(theme === "dark") {
+        document.body.style.background = "linear-gradient(135deg, #333, #666)";
+      } else if(theme === "nature") {
+        document.body.style.background = "linear-gradient(135deg, #a8e063, #56ab2f)";
+      } else {
+        document.body.style.background = "linear-gradient(135deg, #f6d365, #fda085)";
+      }
+    }
+
+    // Coins info
+    function updateCoinInfo() {
+      coinInfo.textContent = `Coins: ${coins}`;
+    }
+
+    // Sharing (Social Sharing)
+    async function shareGame() {
+      const shareData = {
+        title: "Memory Match Game",
+        text: `I am playing Memory Match at Level ${currentLevel}! Join me now.`,
+        url: window.location.href
+      };
+      try {
+        if(navigator.share) {
+          await navigator.share(shareData);
+        } else {
+          alert("Share not supported in this browser.");
+        }
+      } catch (err) {
+        console.log("Share cancelled or failed:", err);
+      }
+    }
+
+    /**************************************************
+     * ========== Modal Functions =====================
+     **************************************************/
+    function showModal(modal) {
+      modal.style.display = "flex";
+    }
+    function hideModal(modal) {
+      modal.style.display = "none";
+    }
+
+    /**************************************************
+     * ========== Helper Functions ====================
+     **************************************************/
+    function shuffleArray(arr) {
+      return arr.sort(() => Math.random() - 0.5);
+    }
+  </script>
+</body>
+</html>
